@@ -1,0 +1,83 @@
+#flagimg{
+    position: absolute;
+    width: 90%;
+    left: 5%;
+    border-radius: 20px;
+    margin-top: 30%;
+    height: 50%;
+}
+
+body{
+    padding: 0;
+    border: 0;
+    margin: 0;
+    background-color: #99f;
+}
+#navbar{
+   position: relative;
+   padding: 0;
+   border: 0;
+   margin: 0;
+   width: 100vw; 
+   height: 100vh;
+}
+#maindiv{
+    position:absolute;
+    width: 80%;
+    height: 100%;
+    right: 0;
+    background-color: #fff;
+    border-radius: 20px 0 0 20px;
+}
+
+#logo{
+    position:absolute;
+    width: 20%;
+    height: 100%;
+    left: 0;
+    background-color: #0f00;
+}
+.wtext{
+    color: #fff;
+    font-size: 30px;
+    text-shadow: 2px 1px 5px #000;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    text-align: center;
+}
+
+#maindiv{
+    text-align: center;
+}
+
+#header{
+    font-size: 30px;
+    text-shadow: 2px 1px 2px #000;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    margin-top: 10%;
+}
+
+#downHeaderDiv .login2 form input{
+    display: block;
+    margin: 0 auto;
+    box-sizing: border-box;
+    padding: 12px 20px;
+    box-shadow: #000;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    width: 350px;
+}
+
+#login3{
+    font-size: 20px;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+#cac{
+    font-weight: 900;
+    border-radius: 10px;
+    background-color:  aquamarine;
+    color: black;
+    padding: 2% 15%;
+    margin-top: 10%;
+    cursor: pointer;
+}
