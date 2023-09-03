@@ -80,7 +80,6 @@ if (isset($_GET['location'])) {
     <script>
         var currLocation = "<?php echo $location; ?>";
         window.onload = function() {
-            console.log('searching for', currLocation);
             if (currLocation) {
                 searchRestaurants();
                 searchAttractions();
@@ -95,7 +94,6 @@ if (isset($_GET['location'])) {
         function searchHotels(){
 
             var city = currLocation;//document.getElementById('city').value;
-            console.log('city', city);
             // Create a PlacesService object to interact with the Places API
             var placesService = new google.maps.places.PlacesService(document.createElement('div'));
 
@@ -108,7 +106,6 @@ if (isset($_GET['location'])) {
             // Perform the Places API search
             placesService.textSearch(request, function (results, status) {
                 if (status === google.maps.places.PlacesServiceStatus.OK) {
-                    console.log(results);
                     displayResults(results, 'hotelsResults');
                 } else {
                     document.getElementById('hotelsResults').innerHTML = "No hotels found in the specified city.";
@@ -133,7 +130,6 @@ if (isset($_GET['location'])) {
             // Perform the Places API search
             placesService.textSearch(request, function (results, status) {
                 if (status === google.maps.places.PlacesServiceStatus.OK) {
-                    console.log(results);
                     displayResults(results, 'attrectionResults');
                 } else {
                     document.getElementById('attrectionResults').innerHTML = "No attraction found in the specified city.";
@@ -158,7 +154,6 @@ if (isset($_GET['location'])) {
             // Perform the Places API search
             placesService.textSearch(request, function (results, status) {
                 if (status === google.maps.places.PlacesServiceStatus.OK) {
-                    console.log(results);
                     displayResults(results, 'restaurantResults');
                 } else {
                     document.getElementById('restaurantResults').innerHTML = "No restaurants found in the specified city.";
