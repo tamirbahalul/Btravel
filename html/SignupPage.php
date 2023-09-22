@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-signin-client_id">
     <title>Btravel</title>
-    <link rel="stylesheet" type="text/css" href="../css/style2.css">
+    <link rel="stylesheet" type="text/css" href="../css/styleSingUp.css">
     <link rel="icon" href="../img/istockphoto-840458514-612x612.png">
     <script src="https://accounts.google.com/gsi/client"></script>
    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>

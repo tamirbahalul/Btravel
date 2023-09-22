@@ -1,0 +1,7 @@
+.comment {
+    border: black solid 1px;
+    border-radius: 5px;
+    padding: 20px;
+    margin: 10px;
+    background: lightgray;
+}

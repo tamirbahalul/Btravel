@@ -60,6 +60,8 @@ function createUser($username,$email,$password) {
             if ($conn->query($sql)) {
                 // User created successfully
                 $_SESSION['login_user'] =$username;
+                $_SESSION['id'] = $user_id;
+                $_SESSION['is_admin'] = $result['is_admin'];
                 header("Location: HomePage.php");
                 exit();
             }else{
@@ -111,7 +113,10 @@ function login1(){
         $result = mysqli_query($conn,$query);
 
         if(mysqli_num_rows($result) == 1) {
-            $_SESSION['login_user'] = $username;
+            $row = $result->fetch_assoc();
+            $_SESSION['login_user'] = $row['username'];
+            $_SESSION['user_id'] = $row['id'];
+            $_SESSION['is_admin'] = $row['is_admin'];
             header("Location: HomePage.php");
             exit();
          }else {
@@ -129,7 +134,10 @@ function login1(){
         $result = mysqli_query($conn,$query);
 
         if(mysqli_num_rows($result) == 1) {
-            $_SESSION['login_user'] = $username;
+            $row = $result->fetch_assoc();
+            $_SESSION['login_user'] = $row['username'];
+            $_SESSION['user_id'] = $row['id'];
+            $_SESSION['is_admin'] = $row['is_admin'];
             header("Location: HomePage.php");
             exit();
          }else {

@@ -1,5 +1,6 @@
 <?php 
 include "Config.php";
+
 if ($db->connect_errno) {
     die("Failed to connect to MySQL: " . $mysqli->connect_error);
 }
@@ -10,34 +11,38 @@ if (isset($_POST['submit'])) {
     if(!filter_var($email, FILTER_VALIDATE_EMAIL)){}
 
     // Prepare a SQL statement to check if the email exists
-    $stmt = $mysqli->prepare("SELECT COUNT(*) FROM users WHERE email = '$email'");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-
-    // Retrieve the result
-    $stmt->bind_result($count);
-    $stmt->fetch();
-
+    $user_id_query = "SELECT id FROM users WHERE email = '$email'";
+    $user_id_result = mysqli_query($db, $user_id_query);
+    $user_exists = false;
+    if ($row = $user_id_result->fetch_assoc()) {
+        $user_id = $row['id'];
+        $user_exists = true;
+    }
+    
     // Check the count of rows returned
-    if ($count > 0) {
+    if ($user_exists) {
         // Email exists in the database
         // Step 3: Generate a Token
         $token = generateToken(); // Implement your own token generation logic
     
         //------------ Store the token in the database along with the user's email
-    
+        $insert_pw_attempt = "INSERT INTO password_reset_attempts (token, user_id) VALUES (?, ?)";
+        $stmt = mysqli_prepare($db, $insert_pw_attempt);
+        mysqli_stmt_bind_param($stmt, "ss", $token, $user_id);
+        mysqli_stmt_execute($stmt);
+
         //------------ Step 4: Email Verification
-        $resetLink = "https://example.com/reset_password.php?token=" . $token;
+        $resetLink = "https://localhost/reset_password.php?token=" . $token;
         $emailSubject = "Password Reset";
         $emailBody = "To reset your password, click the link below:\n\n" . $resetLink;
-        $headers = "From: example@example.com";
+        $headers = "From: pwreset@btravel.com";
 
         // Send the email
         mail($email, $emailSubject, $emailBody, $headers);
 
         // Display a success message to the user
         echo "Password reset link has been sent to your email address, please enter and verify.";
-        header("Refresh:5; url=https://localhost/www/project/html/resetPassPage2.php");
+        // header("Refresh:5; url=https://localhost/www/project/html/resetPassPage2.php");
         exit();
     } else {
         // Email does not exist in the database

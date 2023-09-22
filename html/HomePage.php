@@ -14,6 +14,7 @@ $username = "Guest"; // Initialize a variable
 
 if(isset($_SESSION['login_user'])) {
     $username = $_SESSION['login_user'];
+    //$is_admin = $_SESSION['is_admin'];
 } else {
     header('Refresh:0; url=https://localhost:443/www/project/html/SignupPage.php');
     exit();
@@ -36,7 +37,7 @@ if(isset($_GET['location'])){
     <title>Btravel</title>
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="../css/style1.css">
+    <link rel="stylesheet" type="text/css" href="../css/styleHomePage.css">
     <link rel="icon" href="../img/istockphoto-840458514-612x612.png">
     <script src="https://kit.fontawesome.com/12a8802bc9.js" crossorigin="anonymous"></script>
 </head>
@@ -54,7 +55,6 @@ if(isset($_GET['location'])){
             </ul>
         </div>
         <div class="logout">
-            <!-- <a href="SignupPage.php">Sign Up</a> not need this because the logout back to the signup page -->
             <a href="logout.php">logout</a>
         </div>      
     </div>
@@ -72,6 +72,5 @@ if(isset($_GET['location'])){
         </div>
     </div>    
     
-    <script src="script1.js"></script>
 </body>
 </html>

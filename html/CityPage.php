@@ -14,6 +14,7 @@ $username = "Guest"; // Initialize a variable
 
 if(isset($_SESSION['login_user'])) {
     $username = $_SESSION['login_user'];
+    //$is_admin = $_SESSION['is_admin'];
 } else {
     header('Refresh:0; url=https://localhost:443/www/project/html/SignupPage.php');
     exit();
@@ -37,7 +38,7 @@ if (isset($_GET['location'])) {
     <title>Btravel</title>
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="../css/style6.css">
+    <link rel="stylesheet" type="text/css" href="../css/styleCityPage.css">
     <link rel="icon" href="../img/istockphoto-840458514-612x612.png">
     <script src="https://kit.fontawesome.com/12a8802bc9.js" crossorigin="anonymous"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCyTrk632VPw8v3qxrpuLdSha9QdPqxL4I&libraries=places" async defer></script>
@@ -55,15 +56,20 @@ if (isset($_GET['location'])) {
                 <li><a href="#">Recommended</a></li>
             </ul>
         </div>
-        <div class="container">
-            <form id="searchForm">
-                <input type="text" placeholder="search city" name="location" id='city' required>
-                <button type="submit" name="submit" value="search"><i class="fa fa-search" aria-hidden="true"></i></button>
-            </form>
-        </div>      
+        <form id="searchForm" class="search-form">
+            <input type="text" placeholder="search city" name="location" id='city' required>
+            <button type="submit" name="submit" value="search"><i class="search-button fa fa-search" aria-hidden="true"></i></button>
+        </form>
     </div>
-    <div class="heading">
-        <h1 class="temp" id="cityName"><?php echo "$location"; ?></h1>
+<div class="inclu">  
+    <div class="nameC"><h1 class="temp" id="cityName"><?php echo "$location"; ?></h1></div>
+    <div class="weatherAndSort">
+        <div class="weatherC" id="getWeather">
+           
+        </div>
+        <button id="sort-button" name="Sort" value="Sort" class="sort-button"><h3>Sort by Rating</h3></button>
+    </div>
+        <div class="heading">
         <div>
             <h2 class="temp">hotels</h2>
             <div class="hotels" id="hotelsResults"></div>
@@ -76,7 +82,8 @@ if (isset($_GET['location'])) {
             <h2 class="temp">attraction</h2>
             <div class="attraction" id="attrectionResults"></div>            
         </div>
-    </div>    
+    </div>  
+</div>    
     <script>
         var currLocation = "<?php echo $location; ?>";
         window.onload = function() {
@@ -100,7 +107,7 @@ if (isset($_GET['location'])) {
             // Define the search request parameters
             var request = {
                 query: 'hotels in ' + city,
-                fields: ['name', 'formatted_address']
+                fields: ['name', 'formatted_address', 'geometry', 'rating', 'photos', 'opening_hours', 'website', 'reviews']
             };
 
             // Perform the Places API search
@@ -124,7 +131,7 @@ if (isset($_GET['location'])) {
             // Define the search request parameters
             var request = {
                 query: 'attractions in ' + city,
-                fields: ['name', 'formatted_address']
+                fields: ['name', 'formatted_address', 'geometry', 'rating', 'photos', 'opening_hours', 'website', 'reviews']
             };
 
             // Perform the Places API search
@@ -138,6 +145,33 @@ if (isset($_GET['location'])) {
 
         }
 
+        function getResultDetails(resolve, reject, placesService, result) {
+            placesService.getDetails(
+                { placeId: result['place_id'] }, 
+                function(place, status) {
+                    if (status !== google.maps.places.PlacesServiceStatus.OK) {
+                        reject("Failed to fetch details for place_id=" + result['place_id'])
+                    } else {
+                        resolve(place);
+                    }
+                }
+            );
+        }
+
+        async function searchWithDetails(placesService, request) {
+            return new Promise((resolve, reject) => {
+                placesService.textSearch(request, function (results, status) {
+                    if (status !== google.maps.places.PlacesServiceStatus.OK) {
+                        reject("Failed to fetch text search results from google");
+                    } else {
+                        const resultsWithDetailsPromises = results.map(result => 
+                            new Promise((res, rej) => getResultDetails(res, rej, placesService, result))
+                        );
+                        resolve(Promise.all(resultsWithDetailsPromises));
+                    }
+                });
+            });
+        }
 
         function searchRestaurants() {
             var city = currLocation;//document.getElementById('city').value;
@@ -148,100 +182,91 @@ if (isset($_GET['location'])) {
             // Define the search request parameters
             var request = {
                 query: 'restaurants in ' + city,
-                fields: ['name', 'formatted_address']
+                fields: ['name', 'formatted_address', 'geometry', 'rating', 'photos', 'opening_hours']
             };
 
-            // Perform the Places API search
-            placesService.textSearch(request, function (results, status) {
-                if (status === google.maps.places.PlacesServiceStatus.OK) {
+            searchWithDetails(placesService, request)
+                .then(results => {
+                    console.log(results);
                     displayResults(results, 'restaurantResults');
-                } else {
+                })
+                .catch(error => {
                     document.getElementById('restaurantResults').innerHTML = "No restaurants found in the specified city.";
-                }
-            });
+                });
         }
 
         function displayResults(results, resultsDivId) {
-            var resultsDiv = document.getElementById(resultsDivId);
+            const resultsDiv = document.getElementById(resultsDivId);
             results.forEach(function (place) {
-                var element = document.createElement('div');
+                const element = document.createElement('div');
                 element.classList.add("google-place-result");
+                const isOpen = !place.opening_hours ? '' : `${place.opening_hours.isOpen() ? 'Open' : 'Closed'} now`;
                 element.innerHTML = `
-                    <h2>${place.name}</h2>
+                    <a href="${place.url}" target="_blank"><h2>${place.name}</h2></a>
                     <p>${place.formatted_address}</p>
+                    <p name="rating">rating: ${place.rating}</p>
+                    <p>${isOpen}</p>
                 `;
                 resultsDiv.appendChild(element);
             });
         }
 
-        function displayResults1(results) {
-            var restaurantResultsDiv = document.getElementById('restaurantResults');
-            restaurantResultsDiv.innerHTML = "";
+        document.addEventListener('DOMContentLoaded', function () {
+        const sortButton = document.getElementById('sort-button');
+        if(sortButton){
+            sortButton.addEventListener('click', function () {
+                const getRating = (child) => parseFloat(child.querySelector('p[name="rating"]').innerText.split(' ')[1]);
+                const sortResults = (resultsDivId) => {
+                    let sortedChildren = [];
+                    const resultsDiv = document.getElementById(resultsDivId);
+                    const children = resultsDiv.children;
+                    for (let child of children) {
+                        sortedChildren.push(child);
+                    }
 
-            // results.forEach(function (place) {
-            //     var restaurantDiv = document.createElement('div');
-            //     var name = document.createElement('h2');
-            //     var img = document.createElement('div');
-            //     img.innerHTML = place.photos ? place.photos[0].html_attributions[0] : "";
-            //     name.textContent = place.name;
-            //     var address = document.createElement('p');
-            //     address.textContent = place.formatted_address;
+                    sortedChildren.sort((a, b) => getRating(b) - getRating(a));
 
-            //     restaurantDiv.appendChild(name);
-            //     restaurantDiv.appendChild(address);
-            //     restaurantDiv.appendChild(img);
-            //     restaurantResultsDiv.appendChild(restaurantDiv);
-            // });
-
-            results.forEach(function (place) {
-                var restaurantDiv = document.createElement('div');
-                restaurantDiv.innerHTML = `
-                    <h2>${place.name}</h2>
-                    <p>${place.formatted_address}</p>
-                `;
-                restaurantResultsDiv.appendChild(restaurantDiv);
+                    resultsDiv.innerHtml = '';
+                    sortedChildren.forEach(child => resultsDiv.appendChild(child));
+                };
+                
+                ['hotelsResults', 'restaurantResults', 'attrectionResults'].forEach(resultsDiv => sortResults(resultsDiv));
             });
         }
+    });
 
-        function displayResults2(results) {
-            var attractionResultsDiv = document.getElementById('attrectionResults');
-            attractionResultsDiv.innerHTML = "";
-
-            results.forEach(function (place) {
-                var attractionDiv = document.createElement('div');
-                var name = document.createElement('h2');
-                var img = document.createElement('div');
-                img.innerHTML = place.photos ? place.photos[0].html_attributions[0] : "";
-                name.textContent = place.name;
-                var address = document.createElement('p');
-                address.textContent = place.formatted_address;
-
-                attractionDiv.appendChild(name);
-                attractionDiv.appendChild(address);
-                attractionDiv.appendChild(img);
-                attractionResultsDiv.appendChild(attractionDiv);
-            });
+        function sortPlacesByRating(places) {
+            return places.sort((a, b) => (b.rating || 0) - (a.rating || 0));    
         }
-
-        function displayResults3(results) {
-            var hotelsResultsDiv = document.getElementById('hotelsResults');
-            hotelsResultsDiv.innerHTML = "";
-
-            results.forEach(function (place) {
-                var hotelsDiv = document.createElement('div');
-                var name = document.createElement('h2');
-                var img = document.createElement('div');
-                img.innerHTML = place.photos ? place.photos[0].html_attributions[0] : "";
-                name.textContent = place.name;
-                var address = document.createElement('p');
-                address.textContent = place.formatted_address;
-
-                hotelsDiv.appendChild(name);
-                hotelsDiv.appendChild(address);
-                hotelsDiv.appendChild(img);
-                hotelsResultsDiv.appendChild(hotelsDiv);
-            });
+     
+        //Weather :
+        const apiKey = '177c4aa44e57140c1a28eba1c6c8b4e2';
+        //document.getElementById('city').addEventListener('click', () => {
+        const cityWeather = currLocation;
+        
+        if (cityWeather) {
+            fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityWeather}&appid=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.cod === 200) {
+                        const temperature = (data.main.temp - 273.15).toFixed(2); // Convert temperature to Celsius
+                        const weatherDescription = data.weather[0].description;
+                        const cityName = data.name;
+                        const country = data.sys.country;
+                        const weatherInfo = `Temperature in ${cityName},<br>${country}: ${temperature}°C<br>Weather: ${weatherDescription}`;
+                        document.getElementById('getWeather').innerHTML = `<h2>${weatherInfo}</h2>`;
+                    } else {
+                        document.getElementById('weatherInfo').innerHTML = 'City not found.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('weatherInfo').innerHTML = 'An error occurred while fetching weather data.';
+                });
+        } else {
+            document.getElementById('weatherInfo').innerHTML = 'Please enter a city name.';
         }
+    //});
 
     </script>
 

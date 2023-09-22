@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Btravel</title>
-    <link rel="stylesheet" type="text/css" href="../css/style5.css">
+    <link rel="stylesheet" type="text/css" href="../css/styleResPass2.css">
     <link rel="icon" href="../img/istockphoto-840458514-612x612.png">
 </head>
 

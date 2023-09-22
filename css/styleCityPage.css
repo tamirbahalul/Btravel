@@ -10,9 +10,8 @@
     width: 100%;
     height: 80px;
     background-color: #fee;
-    /* position: fixed; */
     display: flex;
-    justify-content: space-around;
+    justify-content:space-around;
     align-items: center;
     color: #000;
     z-index: 1;
@@ -42,33 +41,49 @@
     display: flex;
     flex-direction: column;
     align-items: space-around;
-    /* justify-content: space-around; */
     background-image: url('../img/hot-air-balloon-day2.png');
     background-size: 100%;
 }
 
+.inclu{
+    display: block;
+}
+
 .heading{
     display: flex;
-    justify-content: space-evenly;
+    justify-content: space-evenly;  
 }
 
-.hotels{
-
+.nameC, .weatherAndSort{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.restaurant{
+.weatherAndSort {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
+#sort-button {
+    font-size: 16px;  
+}
+
+.weatherC{
+    font-size: 14px;
+    margin: 0;
+    font-weight: 900;
+    text-shadow: 2px 1px 2px #000, 0 0 5px #FFF;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
 
 .google-place-result {
     padding: 10px;
     margin: 10px;
-    background-color: rgba(224, 224, 224, 0.7);
+    background-color: rgba(224, 224, 224, 0.55);
     border-radius: 10px;
-}
-
-.attraction{
-
 }
 
 h1.temp{
@@ -90,21 +105,17 @@ h2.temp{
 }
 
 .hotels, .restaurant, .attraction {
-    border: 1px solid #ccc;
     padding: 10px;
     margin-bottom: 20px;
 }
 
-.container form{
+.search-form {
     position: relative;
-    margin-left: auto;
-}
-
-form{
-    background: gray;
+    display: flex;
+    align-items: center;
+    align-self:auto;
     border-radius: 25px;
-    position: absolute;
-    width: 60%;
+    margin-left: 100px;
 }
 
 input{
@@ -122,9 +133,17 @@ input:focus{
    outline: none; 
 }
 
-button{
+.sort-button {
+    padding: 8px;
+    margin: 5px;
+    border-radius: 5px;
+    background-color: #ccf;
+    font-weight: bold;
+}
+
+.search-button{
     position: absolute;
-    top: 0;
+    top: 15px;
     right: 0;
     width: 50px;
     height: 100%;
@@ -135,11 +154,11 @@ button{
     font-size: 18px;
 }
 
-button i{
+.search-button i{
     color: rgb(93, 94, 95);
 }
 
-button:hover i{
+.search-button:hover i{
     color: rgb(162, 163, 163);
 }
 
