@@ -41,6 +41,7 @@ if(isset($_GET['location'])){
     <link rel="stylesheet" type="text/css" href="../css/styleHomePage.css">
     <link rel="icon" href="../img/istockphoto-840458514-612x612.png">
     <script src="https://kit.fontawesome.com/12a8802bc9.js" crossorigin="anonymous"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCyTrk632VPw8v3qxrpuLdSha9QdPqxL4I&libraries=places" async defer></script>
 </head>
 <body>
     
@@ -66,7 +67,7 @@ if(isset($_GET['location'])){
             <br>
         <div class="container">
             <form id="searchForm" method="GET">
-                <input type="text" placeholder="Search City" name="location" required>
+                <input id="place_autocomplete" name="place" type="text" placeholder="write place" required />
                 <button type="submit" name="submit" value="search"><i class="fa fa-search" aria-hidden="true"></i></button>
             </form>
             <div class="<?php 
@@ -103,6 +104,25 @@ if(isset($_GET['location'])){
                 usersElement.innerHTML = `${adminData['users']}`;
             });
         }
+
+        window.onload = function() {
+            const input = document.getElementById("place_autocomplete");
+            const options = {
+                fields: ["name"],
+                strictBounds: false,
+                types: ['(cities)']
+            };
+            const autocomplete = new google.maps.places.Autocomplete(input, options);
+            autocomplete.addListener("place_changed", async () => {
+                const place = autocomplete.getPlace();
+                const response = await fetch(`api/home/selectedLocation.php?location=${place['name']}`, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+                window.location.href = response.url;
+            });
+        };
+
     </script>
 </body>
 </html>
