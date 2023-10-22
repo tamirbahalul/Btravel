@@ -24,7 +24,7 @@ function hashPassword($password) {
 // Function to create a new user
 function createUser($username,$email,$password) {
     global $conn;
-    if (empty($username) || strlen($password) < 8) {
+    if (empty($username) || empty($password)) {
         echo "Username or password cannot be empty.";
         header("Refresh:5; url=https://localhost/www/project/html/SignupPage.php");
         exit();
@@ -60,7 +60,7 @@ function createUser($username,$email,$password) {
             if ($conn->query($sql)) {
                 // User created successfully
                 $_SESSION['login_user'] =$username;
-                $_SESSION['id'] = $user_id;
+                $_SESSION['user_id'] = $user_id;
                 $_SESSION['is_admin'] = $result['is_admin'];
                 header("Location: HomePage.php");
                 exit();

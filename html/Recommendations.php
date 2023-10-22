@@ -21,11 +21,12 @@ if(isset($_SESSION['login_user'])) {
     exit();
 }
 
-if(isset($_GET['location'])){
-    $location = $_GET['location'];
-    header("Location: CityPage.php?location=$location");
-}
+$location = "";  // Initialize the variable
 
+if (isset($_GET['location'])) {
+    // Get the location from the URL parameter sent by the homepage form
+    $location = $_GET['location'];
+}
 
 ?>
 
@@ -38,12 +39,12 @@ if(isset($_GET['location'])){
     <title>Btravel</title>
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="../css/styleHomePage.css">
+    <link rel="stylesheet" type="text/css" href="../css/styleRecommendations.css">
     <link rel="icon" href="../img/istockphoto-840458514-612x612.png">
     <script src="https://kit.fontawesome.com/12a8802bc9.js" crossorigin="anonymous"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCyTrk632VPw8v3qxrpuLdSha9QdPqxL4I&libraries=places" async defer></script>
 </head>
-<body>
-    
+<body class="body">
     <div class="navbar">
         <div class="logo">
             <h1 id="username"><?php echo "Hello $username"; ?></h1>
@@ -55,52 +56,43 @@ if(isset($_GET['location'])){
                 <li><a href="Recommendations.php">Recommendations</a></li>
             </ul>
         </div>
-        <div class="logout">
-            <a href="logout.php">logout</a>
-        </div>      
     </div>
-    <div class="body">
-        <div class="heading">
-            <h1 class="temp">To Travel Is To Live</h1>
-            <p class="temp">Where do you want to visit?</p>
-            <br>
-        <div class="container">
-            <form id="searchForm" method="GET">
-                <input type="text" placeholder="Search City" name="location" required>
-                <button type="submit" name="submit" value="search"><i class="fa fa-search" aria-hidden="true"></i></button>
-            </form>
-            <div class="<?php 
-                if ($is_admin) 
-                    echo ""; 
-                else 
-                    echo "hidden"; 
-            ?>">
-                <p>
-                    <span>Comments: </span>
-                    <span id="admin-data-comments"></span>
-                </p>
-                <p>
-                    <span>Users: </span>
-                    <span id="admin-data-users"></span>
-                </p>
-            </div>
-        </div>
-        </div>
-    </div>    
+    <div class="comments-body">    
+        <h1>Top 3 Recommendations</h1>
+        <div id="comments"></div>
+    </div>
     <script>
-        const isAdmin = "<?php echo $is_admin ?>" !== "0";
-        if (isAdmin) {
-            fetch('api/home/adminData.php', {
+        var currLocation = "<?php echo $location; ?>";
+        window.onload = function() {
+            loadComments();
+        };
+
+        function loadComments() {
+            fetch('api/recommendations/fetch.php', {
                 method: 'GET'
             })
             .then(response => {
                 return response.json();
             })
-            .then(adminData => {
-                const commentsElement = document.getElementById("admin-data-comments");
-                const usersElement = document.getElementById("admin-data-users");
-                commentsElement.innerHTML = `${adminData['comments']}`;
-                usersElement.innerHTML = `${adminData['users']}`;
+            .then(comments => {
+                const commentsDiv = document.getElementById("comments");
+                commentsDiv.innerHTML = '';
+                comments.forEach((comment, index) => {
+                    const commentDiv = document.createElement('div');
+                    commentDiv.innerHTML = `
+                        <div class="comment comment-${index}" id="comment-${comment['id']}">
+                            <h3>${comment['place_name']}</h3>
+                            <h4>${comment['place_address']}</h4>
+                            <h5>Rating: ${comment['rating']}</h5>
+                            <div name="comment-text">
+                                <p name="content">${comment['text']}</p>
+                            </div>
+                            <span>${comment['username']}</span>
+                            <span>${comment['creation_date']}</span>
+                        </div>
+                    `;
+                    commentsDiv.append(commentDiv);
+                });
             });
         }
     </script>

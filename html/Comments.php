@@ -28,6 +28,12 @@ if (isset($_GET['location'])) {
     $location = $_GET['location'];
 }
 
+if (isset($_GET['page'])) {
+    $page = $_GET['page'];
+} else {
+    $page = 0;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -52,45 +58,49 @@ if (isset($_GET['location'])) {
         <div class="menu">
             <ul>
                 <li><a href="HomePage.php">Home</a></li>
-                <li><a href="#">Comments</a></li>
-                <li><a href="#">Recommended</a></li>
+                <li><a href="Comments.php">Comments</a></li>
+                <li><a href="Recommendations.php">Recommendations</a></li>
             </ul>
         </div>
-        <form id="searchForm" class="search-form">
-            <input type="text" placeholder="search city" name="location" id='city' required>
-            <button type="submit" name="submit" value="search"><i class="search-button fa fa-search" aria-hidden="true"></i></button>
+    </div>
+    <div class="comments-body">    
+        <button id="sortB" onClick="fetchByRating()">Sort by rating</button>
+        <form id="searchForm" class="search-form" onsubmit="GET">
+            <input type="text" placeholder="filter location" name="location">
+            <button type="submit" name="submit" value="search"><i class="fa fa-search" aria-hidden="true"></i></button>
         </form>
-        <div class="comments-body">
-            <button onClick="fetchByRating()">Sort by rating</button>
-            <div>
-                <form id="add-comment-form" class="add-comment-form">
-                    <label for="place">Place</label>
-                    <input id="place_autocomplete" name="place" type="text" required />
-                    <label for="rating">Rating</label>
-                    <select name="rating" required>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                    </select>
-                    <label for="text">Text</label>
-                    <input name="text" type="text" />
-                    <button type="submit">Add Comment</button>
-                </form>
-            </div>
-            <div id="comments">
-
-            </div>
+        <form id="add-comment-form" class="add-comment-form">
+            <label for="place">Place</label>
+            <input id="place_autocomplete" name="place" type="text" placeholder="write place" required />
+            <label for="rating">Rating</label>
+            <select name="rating" required>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <label for="text">Text</label>
+            <input name="text" type="text" placeholder="write text"/>
+            <button type="submit">Add Comment</button>
+        </form>
+        <div id="comments"></div>
+        <div id="page-buttons" class="page-buttons">
+            <button id="prev-page-button" onclick="goToPrevPage()">Previous</button>
+            <button id="next-page-button" onclick="goToNextPage()">Next</button>
         </div>
     </div>
     <script>
+        var pageSize = 5;
+        var pageNumber = parseInt("<?php echo $page; ?>");
         var currLocation = "<?php echo $location; ?>";
+
         window.onload = function() {
             const input = document.getElementById("place_autocomplete");
             const options = {
                 fields: ["place_id", "formatted_address", "name"],
                 strictBounds: false,
+                types: ['address']
             };
             const autocomplete = new google.maps.places.Autocomplete(input, options);
 
@@ -101,48 +111,103 @@ if (isset($_GET['location'])) {
                 onAddComment(this, place); // Call the "x" function with the form as an argument
             });
 
-            loadComments(null);
+            loadComments();
         };
 
-        function loadComments(queryParams) {
-            let url = 'api/comments/fetch.php';
-            if (queryParams) {
-                url += '?' + Object.keys(queryParams).map(k => `${k}=${queryParams[k]}`).join('&');
+        function loadComments(queryParams = {}) {
+            let url = `api/comments/fetch.php?`;
+
+            queryParams['limit'] = pageSize;
+            queryParams['offset'] = pageSize * pageNumber;
+                        
+            if (currLocation) {
+                queryParams['location'] = currLocation;
             }
 
+            if (queryParams) {
+                url += Object.keys(queryParams).map(k => `${k}=${queryParams[k]}`).join('&');
+            }
+            
             fetch(url, {
                 method: 'GET'
             })
             .then(response => {
                 return response.json();
             })
-            .then(comments => {
+            .then(response => {
+                const comments = response['rows'];
+                const count = parseInt(response['count']);
                 const isAdmin = "<?php echo $is_admin ?>";
                 const userId = "<?php echo $user_id ?>";
                 const commentsDiv = document.getElementById("comments");
+                
+                const prevPageButton = document.getElementById("prev-page-button");
+                const nextPageButton = document.getElementById("next-page-button");
+                prevPageButton.disabled = pageNumber <= 0;
+                nextPageButton.disabled = count <= (pageNumber + 1) * pageSize;
+
                 commentsDiv.innerHTML = '';
                 comments.forEach(comment => {
-                    const canDelete = isAdmin || comment['user_id'] === userId;
+                    const canDelete = isAdmin !== "0" || comment['user_id'] === userId;
+                    const canEdit = comment['user_id'] === userId;
                     const deleteButton = `
                         <button onClick="deleteComment(${comment['id']})">
                             Delete
                         </button>
                     `;
+                    const EditButton = `
+                        <button name="edit-button" onClick="editComment(${comment['id']})">
+                            Edit Comment
+                        </button>
+                    `;
                     const commentDiv = document.createElement('div');
                     commentDiv.innerHTML = `
-                        <div class="comment">
+                        <div class="comment" id="comment-${comment['id']}">
                             <h3>${comment['place_name']}</h3>
                             <h4>${comment['place_address']}</h4>
                             <h5>Rating: ${comment['rating']}</h5>
-                            <p>${comment['text']}</p>
+                            <div name="comment-text">
+                                <p name="content">${comment['text']}</p>
+                            </div>
                             <span>${comment['username']}</span>
                             <span>${comment['creation_date']}</span>
                             ${canDelete ? deleteButton : ''}
+                            ${canEdit ? EditButton : ''}
                         </div>
                     `;
                     commentsDiv.append(commentDiv);
                 });
             });
+        }
+
+        function goToPage(newPageNumber) {
+            console.log('newPageNumber', newPageNumber);
+            const currentUrl = window.location.href;
+            console.log('currentUrl', currentUrl);
+            if (currentUrl.indexOf("?") !== -1) {
+                // If it does, update the existing query parameter or add a new one
+                var updatedUrl = currentUrl.replace(/([?&])page=.*?(&|$)/, '$1page=' + newPageNumber + '$2');
+                // Replace 'yourParam' with the name of your query parameter.
+                // This regex pattern will find and replace yourParam's value with the new value.
+                
+                // Redirect to the updated URL
+                window.location.href = updatedUrl;
+            } else {
+                // If there is no query string, add the query parameter
+                var updatedUrl = currentUrl + "?page=" + newPageNumber;
+                // Replace 'yourParam' with the name of your query parameter.
+
+                // Redirect to the updated URL
+                window.location.href = updatedUrl;
+            }
+        }
+
+        function goToPrevPage() {
+            goToPage(pageNumber - 1);
+        }
+
+        function goToNextPage() {
+            goToPage(pageNumber + 1);
         }
 
         function fetchByRating() {
@@ -153,6 +218,49 @@ if (isset($_GET['location'])) {
             const data = { comment_id };
             postJsonData('api/comments/delete.php', data);
             location.reload();
+        }
+
+        function editComment(comment_id) {
+            const commentDiv = document.getElementById(`comment-${comment_id}`);
+            const commentTextDiv = commentDiv.querySelector('[name="comment-text"]');
+            const commentContent = commentTextDiv.querySelector('[name="content"]');
+            commentTextDiv.innerHTML = `
+                <input type="text" name="content" value="${commentContent.textContent}">
+            `;
+
+            const editButton = commentDiv.querySelector('[name="edit-button"]');
+            editButton.innerHTML = "Save Comment";
+            editButton.onclick = function() {
+                saveComment(comment_id);
+            };
+        }
+
+        function saveComment(comment_id) {
+            const commentDiv = document.getElementById(`comment-${comment_id}`);
+            const commentTextDiv = commentDiv.querySelector('[name="comment-text"]');
+            const commentContent = commentTextDiv.querySelector('[name="content"]');
+            console.log(commentContent);
+            commentTextDiv.innerHTML = `
+                <p name="content">${commentContent.value}</p>
+            `;
+
+            fetch('api/comments/edit.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ comment_id, comment_text: commentContent.value })
+            })
+            .then(response => {
+                const saveButton = commentDiv.querySelector('[name="edit-button"]');
+                saveButton.innerHTML = "Edit Comment";
+                saveButton.onclick = function() {
+                    editComment(comment_id);
+                };
+            })
+            .catch(error => {
+                console.log(error);
+            });
         }
 
         async function postJsonData(url, jsonData) {

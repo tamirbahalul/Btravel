@@ -52,8 +52,8 @@ if (isset($_GET['location'])) {
         <div class="menu">
             <ul>
                 <li><a href="HomePage.php">Home</a></li>
-                <li><a href="#">Comments</a></li>
-                <li><a href="#">Recommended</a></li>
+                <li><a href="Comments.php">Comments</a></li>
+                <li><a href="Recommendations.php">Recommendations</a></li>
             </ul>
         </div>
         <form id="searchForm" class="search-form">
@@ -94,10 +94,6 @@ if (isset($_GET['location'])) {
             }
         };
 
-        document.getElementById('searchForm').addEventListener('submit', function (event) {
-            
-        });
-
         function searchHotels(){
 
             var city = currLocation;//document.getElementById('city').value;
@@ -110,14 +106,13 @@ if (isset($_GET['location'])) {
                 fields: ['name', 'formatted_address', 'geometry', 'rating', 'photos', 'opening_hours', 'website', 'reviews']
             };
 
-            // Perform the Places API search
-            placesService.textSearch(request, function (results, status) {
-                if (status === google.maps.places.PlacesServiceStatus.OK) {
+            searchWithDetails(placesService, request)
+                .then(results => {
                     displayResults(results, 'hotelsResults');
-                } else {
+                })
+                .catch(error => {
                     document.getElementById('hotelsResults').innerHTML = "No hotels found in the specified city.";
-                }
-            });
+                });
 
 }
 
@@ -134,14 +129,13 @@ if (isset($_GET['location'])) {
                 fields: ['name', 'formatted_address', 'geometry', 'rating', 'photos', 'opening_hours', 'website', 'reviews']
             };
 
-            // Perform the Places API search
-            placesService.textSearch(request, function (results, status) {
-                if (status === google.maps.places.PlacesServiceStatus.OK) {
+            searchWithDetails(placesService, request)
+                .then(results => {
                     displayResults(results, 'attrectionResults');
-                } else {
-                    document.getElementById('attrectionResults').innerHTML = "No attraction found in the specified city.";
-                }
-            });
+                })
+                .catch(error => {
+                    document.getElementById('attrectionResults').innerHTML = "No attrections found in the specified city.";
+                });
 
         }
 
@@ -187,7 +181,6 @@ if (isset($_GET['location'])) {
 
             searchWithDetails(placesService, request)
                 .then(results => {
-                    console.log(results);
                     displayResults(results, 'restaurantResults');
                 })
                 .catch(error => {
@@ -201,10 +194,11 @@ if (isset($_GET['location'])) {
                 const element = document.createElement('div');
                 element.classList.add("google-place-result");
                 const isOpen = !place.opening_hours ? '' : `${place.opening_hours.isOpen() ? 'Open' : 'Closed'} now`;
+                const isRating = !place.rating ? 'No have rating' : `${place.rating}`;
                 element.innerHTML = `
                     <a href="${place.url}" target="_blank"><h2>${place.name}</h2></a>
                     <p>${place.formatted_address}</p>
-                    <p name="rating">rating: ${place.rating}</p>
+                    <p name="rating">rating: ${isRating}</p>
                     <p>${isOpen}</p>
                 `;
                 resultsDiv.appendChild(element);
@@ -266,7 +260,6 @@ if (isset($_GET['location'])) {
         } else {
             document.getElementById('weatherInfo').innerHTML = 'Please enter a city name.';
         }
-    //});
 
     </script>
 

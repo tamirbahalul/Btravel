@@ -49,6 +49,11 @@ body{
     text-align: center;
 }
 
+.error-message {
+    color: red;
+    font-weight: bold;
+}
+
 #header{
     font-size: 30px;
     text-shadow: 2px 1px 2px #000;

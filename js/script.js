@@ -6,7 +6,7 @@ const repeatPasswordField = document.querySelector('#repeat-password');
 const googleUsername = document.querySelector("#google-username");
 const googleEmail = document.querySelector("#google-email");
 const googlePassword = document.querySelector("#google-password");
-const socialForm = document.querySelector("#social");
+const socialForm = document.querySelector("#google-form");
 
 // Regular expressions for email and password validation
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -16,7 +16,6 @@ const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
 function handleCallbackResponse(response) {
     let decoded = jwt_decode(response.credential);
-    console.log(decoded);
     googleUsername.value=decoded.given_name+decoded.family_name;
     googleEmail.value=decoded.email;
     googlePassword.value="from google";
@@ -42,52 +41,12 @@ google.accounts.id.initialize({
     if (response.status === 'connected') {   // Logged into your webpage and Facebook.
       testAPI();  
     } else {                                 // Not logged into your webpage or we are unable to tell.
-      document.getElementById('status').innerHTML = 'Please log ' +
+      const status = document.getElementById('status');
+      if (status) {
+        status.innerHTML = 'Please log ' +
         'into this webpage.';
+      }
     }
   }
 
 
-  function checkLoginState() {               // Called when a person is finished with the Login Button.
-    FB.getLoginStatus(function(response) {   // See the onlogin handler
-      statusChangeCallback(response);
-    });
-  }
-
-
-  window.fbAsyncInit = function() {
-    FB.init({
-      appId      : '618298576692234',
-      cookie     : true,                     // Enable cookies to allow the server to access the session.
-      xfbml      : true,                     // Parse social plugins on this webpage.
-      version    : 'v17.0'           // Use this Graph API version for this call.
-    });
-
-
-    FB.getLoginStatus(function(response) {   // Called after the JS SDK has been initialized.
-      statusChangeCallback(response);        // Returns the login status.
-    });
-  };
- 
-  function testAPI() {                      // Testing Graph API after login.  See statusChangeCallback() for when this call is made.
-    console.log('Welcome!  Fetching your information.... ');
-    FB.api('/me', function(response) {
-      console.log('Successful login for: ' + response.name);
-      document.getElementById('status').innerHTML =
-        'Thanks for logging in, ' + response.name + '!';
-        //location.replace("HomePage.php");
-    });
-  }
-
-
-
-  FB.login(function(response) {
-    if (response.authResponse) {
-      console.log('Welcome!  Fetching your information.... ');
-      FB.api('/me', function(response) {
-        console.log('Good to see you, ' + response.name + '.');
-      });
-    } else {
-      console.log('User cancelled login or did not fully authorize.');
-    }
-  },{scope:'email,user_likes'});

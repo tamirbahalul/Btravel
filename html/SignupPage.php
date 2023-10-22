@@ -22,22 +22,22 @@
             <div id="header">
                 <h1 style="margin-bottom: 0;">Create Account</h1>
                 <div id="faceGoogDiv">
-                    <form action="secure2.php" method="post" id="social">
-                    <div id="google-div"></div>
-                    <input type="hidden" id="google-username" name="username-google" value="">
-                    <input type="hidden" id="google-email" name="email-google" value="">
-                    <input type="hidden" id="google-password" name="password-google" value="">
+                    <form action="login-google.php" method="post" id="google-form">
+                        <div id="google-div"></div>
+                        <input type="hidden" id="google-username" name="username-google" value="">
+                        <input type="hidden" id="google-email" name="email-google" value="">
+                        <input type="hidden" id="google-password" name="password-google" value="">
                     </form>
                 </div>
                 <h3>-OR-</h3>
             </div>
             <div id="downHeaderDiv">
                 <div class="login2">
-                    <form method="POST" action="secure2.php">
-                        <input type="text" id="name" name="username" placeholder="User Name">
-                        <input type="email" id="eamil" name="email" placeholder="Email Address">
-                        <input type="password" id="password" name="password" placeholder="Password">
-                        <button id="cac" type="submit" value="createUser">Create Account</button>
+                    <form id="manual-form">
+                        <input type="text" id="manual-username" name="username" placeholder="User Name" required>
+                        <input type="email" id="manual-email" name="email" placeholder="Email Address" required>
+                        <input type="password" id="manual-password" name="password" placeholder="Password" required>
+                        <button id="cac" value="createUser" type="submit">Create Account</button>
                     </form>
                 </div>
                 <div id="login3">
@@ -45,6 +45,7 @@
                         Already have an account?<a href="loginPage.php">login</a>
                     </p>
                 </div>
+                <p class="error-message" id="error-message"></p>
             </div>   
         </div>
         <div id="logo">
@@ -54,6 +55,52 @@
         </div>    
     </div>
     <script src="../js/script.js"></script>
+    <script>
+        const manualForm = document.getElementById("manual-form");
+        manualForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            createUser('manual');
+        });
+
+        const googleForm = document.getElementById("google-form");
+        googleForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            createUser('google');
+        });
+
+        function onGoogleLogin(e) {
+            e.preventDefault();
+            createUser('google');
+        }
+
+        async function createUser(methodIn) {
+            try {
+                const username = document.getElementById(`${methodIn}-username`).value;
+                const password = document.getElementById(`${methodIn}-password`).value;
+                const email = document.getElementById(`${methodIn}-email`).value;
+                const response = await fetch('api/signUp/create.php', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        username, password, email, method: methodIn
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    redirect: 'follow'
+                });
+
+                if (!response.ok) {
+                    const jsonData = await response.json();
+                    throw jsonData.error;
+                }
+
+                window.location.href = response.url;
+            } catch (error) {
+                const errorMessageDiv = document.getElementById("error-message");
+                errorMessageDiv.innerHTML = error;
+            }
+        }   
+    </script>
 </body>
 
 </html>
