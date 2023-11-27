@@ -14,7 +14,7 @@ $username = "Guest"; // Initialize a variable
 
 if(isset($_SESSION['login_user'])) {
     $username = $_SESSION['login_user'];
-    //$is_admin = $_SESSION['is_admin'];
+    $is_admin = $_SESSION['is_admin'];
 } else {
     header('Refresh:0; url=https://localhost:443/www/project/html/SignupPage.php');
     exit();
@@ -56,8 +56,8 @@ if (isset($_GET['location'])) {
                 <li><a href="Recommendations.php">Recommendations</a></li>
             </ul>
         </div>
-        <form id="searchForm" class="search-form">
-            <input type="text" placeholder="search city" name="location" id='city' required>
+        <form id="searchForm" class="search-form" method="GET">
+            <input id="place_autocomplete" type="text" placeholder="search city" name="location" id='city' required>
             <button type="submit" name="submit" value="search"><i class="search-button fa fa-search" aria-hidden="true"></i></button>
         </form>
     </div>
@@ -91,6 +91,21 @@ if (isset($_GET['location'])) {
                 searchRestaurants();
                 searchAttractions();
                 searchHotels();
+                const input = document.getElementById("place_autocomplete");
+                const options = {
+                fields: ["name"],
+                strictBounds: false,
+                types: ['(cities)']
+            };
+            const autocomplete = new google.maps.places.Autocomplete(input, options);
+            autocomplete.addListener("place_changed", async () => {
+                const place = autocomplete.getPlace();
+                const response = await fetch(`api/home/selectedLocation.php?location=${place['name']}`, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+                window.location.href = response.url;
+            });
             }
         };
 

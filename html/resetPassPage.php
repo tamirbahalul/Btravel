@@ -22,6 +22,9 @@
                         <input type="email" name="email" placeholder="Email Address">
                         <button id="cac" type="submit" value="reset password" name="submit">Send Confirm To Email</button>
                     </form>
+                    <div id="backLogin">
+                        Back To Login <a href="loginPage.php">Click Here</a>
+                    </div>
                 </div>
             </div>   
         </div>

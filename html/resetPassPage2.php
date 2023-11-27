@@ -18,10 +18,12 @@
             </div>
             <div id="downHeaderDiv">
                 <div class="login2">
-                    <form>
-                        <input type="password" placeholder="New Password">
-                        <input type="password" placeholder="Confirm Password">
-                        <button id="cac">Done</button>
+                    <form method="POST" action="api/login/resetPassword.php">
+                        <input required name="username" type="text" placeholder="Username">
+                        <input required name="currentPassword" type="password" placeholder="Current Password">
+                        <input required name="newPassword" type="password" placeholder="New Password">
+                        <input required name="newPasswordConfirm" type="password" placeholder="Confirm Password">
+                        <button id="cac" type="submit" name="submit">Done</button>
                     </form>
                 </div>
             </div>   

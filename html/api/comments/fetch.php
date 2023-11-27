@@ -22,7 +22,7 @@
     $limit = $_GET['limit'];
     $paging = " LIMIT $limit OFFSET $offset";
 
-    $countQuery = "SELECT COUNT(*) as total FROM comments" . $condition;
+    $countQuery = "SELECT COUNT(*) as total FROM comments c" . $condition;
     $countResult = $db->query($countQuery);
     $countRow = $countResult->fetch_assoc();
     $count = $countRow['total'];

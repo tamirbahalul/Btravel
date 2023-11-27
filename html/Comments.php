@@ -22,10 +22,15 @@ if(isset($_SESSION['login_user'])) {
 }
 
 $location = "";  // Initialize the variable
-
 if (isset($_GET['location'])) {
     // Get the location from the URL parameter sent by the homepage form
     $location = $_GET['location'];
+}
+
+$orderby = "";  // Initialize the variable
+if (isset($_GET['orderby'])) {
+    // Get the location from the URL parameter sent by the homepage form
+    $orderby = $_GET['orderby'];
 }
 
 if (isset($_GET['page'])) {
@@ -66,8 +71,8 @@ if (isset($_GET['page'])) {
     <div class="comments-body">    
         <button id="sortB" onClick="fetchByRating()">Sort by rating</button>
         <form id="searchForm" class="search-form" onsubmit="GET">
-            <input type="text" placeholder="filter location" name="location">
-            <button type="submit" name="submit" value="search"><i class="fa fa-search" aria-hidden="true"></i></button>
+            <input type="text" id="name-filter" placeholder="filter location" name="location">
+            <button type="submit" value="search"><i class="fa fa-search" aria-hidden="true"></i></button>
         </form>
         <form id="add-comment-form" class="add-comment-form">
             <label for="place">Place</label>
@@ -91,16 +96,18 @@ if (isset($_GET['page'])) {
         </div>
     </div>
     <script>
-        var pageSize = 5;
+        const pageSize = 5;
         var pageNumber = parseInt("<?php echo $page; ?>");
         var currLocation = "<?php echo $location; ?>";
+        var currOrderBy = "<?php echo $orderby; ?>";
+
 
         window.onload = function() {
             const input = document.getElementById("place_autocomplete");
             const options = {
                 fields: ["place_id", "formatted_address", "name"],
                 strictBounds: false,
-                types: ['address']
+                types: ['geocode', 'establishment']
             };
             const autocomplete = new google.maps.places.Autocomplete(input, options);
 
@@ -119,7 +126,11 @@ if (isset($_GET['page'])) {
 
             queryParams['limit'] = pageSize;
             queryParams['offset'] = pageSize * pageNumber;
-                        
+
+            if (currOrderBy) {
+                queryParams['orderby'] = currOrderBy;
+            }
+
             if (currLocation) {
                 queryParams['location'] = currLocation;
             }
@@ -169,8 +180,8 @@ if (isset($_GET['page'])) {
                             <div name="comment-text">
                                 <p name="content">${comment['text']}</p>
                             </div>
-                            <span>${comment['username']}</span>
-                            <span>${comment['creation_date']}</span>
+                            <span><strong>${comment['username']}</strong></span>
+                            <span><strong>${comment['creation_date']}</strong></span>
                             ${canDelete ? deleteButton : ''}
                             ${canEdit ? EditButton : ''}
                         </div>
@@ -179,27 +190,41 @@ if (isset($_GET['page'])) {
                 });
             });
         }
+        
+        function updateQueryParam(paramName, paramValue) {
+            const currentUrl = window.location.href;
+            if (currentUrl.indexOf("?") !== -1) {
+                if (currentUrl.match(/(&|\?)page=/) !== null) {
+                    const regexStr = `([?&])${paramName}=.*?(&|$)`;
+                    const regex = new RegExp(regexStr);
+                    updatedUrl = currentUrl.replace(regex, `$1${paramName}=${paramValue}$2`);
+                } else {
+                    updatedUrl = currentUrl + `&${paramName}=${paramValue}`;
+                }
+            } else {
+                updatedUrl = currentUrl + `?${paramName}=${paramValue}`;
+            }
+
+            // Redirect to the updated URL
+            console.log(updatedUrl);
+            window.location.href = updatedUrl;
+        }
 
         function goToPage(newPageNumber) {
-            console.log('newPageNumber', newPageNumber);
-            const currentUrl = window.location.href;
-            console.log('currentUrl', currentUrl);
-            if (currentUrl.indexOf("?") !== -1) {
-                // If it does, update the existing query parameter or add a new one
-                var updatedUrl = currentUrl.replace(/([?&])page=.*?(&|$)/, '$1page=' + newPageNumber + '$2');
-                // Replace 'yourParam' with the name of your query parameter.
-                // This regex pattern will find and replace yourParam's value with the new value.
-                
-                // Redirect to the updated URL
-                window.location.href = updatedUrl;
-            } else {
-                // If there is no query string, add the query parameter
-                var updatedUrl = currentUrl + "?page=" + newPageNumber;
-                // Replace 'yourParam' with the name of your query parameter.
-
-                // Redirect to the updated URL
-                window.location.href = updatedUrl;
-            }
+            updateQueryParam('page', newPageNumber);
+            // console.log('newPageNumber', newPageNumber);
+            // const currentUrl = window.location.href;
+            // console.log('currentUrl', currentUrl);
+            // let updatedUrl = currentUrl;
+            // if (currentUrl.indexOf("?") !== -1) {
+            //     if (currentUrl.match(/(&|?)page=/) !== null) {
+            //         updatedUrl = currentUrl.replace(/([?&])page=.*?(&|$)/, '$1page=' + newPageNumber + '$2');
+            //     } else {
+            //         updatedUrl = currentUrl + "&page=" + newPageNumber;    
+            //     }
+            // } else {
+            //     updatedUrl = currentUrl + "?page=" + newPageNumber;
+            // }
         }
 
         function goToPrevPage() {
@@ -211,7 +236,7 @@ if (isset($_GET['page'])) {
         }
 
         function fetchByRating() {
-            loadComments({ orderby: 'desc' })
+            updateQueryParam('orderby', currOrderBy === 'desc' ? 'asc' : 'desc');
         }
 
         function deleteComment(comment_id) {
@@ -287,6 +312,7 @@ if (isset($_GET['page'])) {
             postJsonData('api/comments/add.php', data);
             location.reload();
         }
+
     </script>
 </body>
 </html>

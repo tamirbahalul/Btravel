@@ -77,11 +77,11 @@ if(isset($_GET['location'])){
                     echo "hidden"; 
             ?>">
                 <p>
-                    <span>Comments: </span>
+                    <span id="admin-data-comments-title">Comments: </span>
                     <span id="admin-data-comments"></span>
                 </p>
                 <p>
-                    <span>Users: </span>
+                    <span id="admin-data-users-title">Users: </span>
                     <span id="admin-data-users"></span>
                 </p>
             </div>

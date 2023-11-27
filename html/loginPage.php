@@ -28,6 +28,7 @@
                 </div>
                 <div id="login3">
                     <p>
+                        Back To SignUp <a href="SignupPage.php">Click Here</a>
                         Forget Password? <a href="resetPassPage.php">Click Here</a>
                     </p>
                 </div>
